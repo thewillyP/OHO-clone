@@ -13,7 +13,7 @@
 
 IMAGE=oho-clone
 VERSION=1.0.2
-DOCKER_URL="docker://thewillyp/${IMAGE}:master-${VERSION}"
+DOCKER_URL="docker://thewillyp/${IMAGE}:main-${VERSION}"
 
 # Build the Singularity image
 singularity build --force /scratch/${USER}/images/${IMAGE}-${VERSION}-cpu.sif ${DOCKER_URL}-cpu

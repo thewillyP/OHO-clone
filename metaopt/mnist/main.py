@@ -298,28 +298,28 @@ def feval(data, target, model, optimizer, mode="eval", is_cuda=0, opt_type="sgd"
     return model, loss.item(), accuracy.item(), output, noise, grad_vec
 
 
-def meta_update(args, data_vl, target_vl, data_tr, target_tr, model, optimizer, noise=None, is_cuda=1):
+def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, optimizer, noise=None):
     param_shapes = model.param_shapes
     dFdlr = unflatten_array(model.dFdlr, model.param_cumsum, param_shapes)
-    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, is_cuda=is_cuda)
+    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, is_cuda=args.is_cuda)
 
-    # dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
-    # Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, is_cuda=is_cuda)
+    dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
+    Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, is_cuda=args.is_cuda)
 
-    model, loss_valid, grad_valid = get_grad_valid(model, data_vl, target_vl, is_cuda)
+    model, loss_valid, grad_valid = get_grad_valid(model, data_vl, target_vl, args.is_cuda)
 
-    grad = flatten_array(get_grads(model.parameters(), is_cuda)).data
+    grad = flatten_array(get_grads(model.parameters(), args.is_cuda)).data
     param = flatten_array(model.parameters())
     model.grad_norm = norm(grad)
     model.param_norm = norm(param)
     grad_vl = flatten_array(grad_valid)
     model.grad_angle = torch.dot(grad / model.grad_norm, grad_vl / model.grad_norm_vl).item()
 
-    model.update_dFdlr(Hv_lr, param, grad, is_cuda, noise=noise)
+    model.update_dFdlr(Hv_lr, param, grad, args.is_cuda, noise=noise)
     model.update_eta(args.mlr, val_grad=grad_valid)
-    # param = flatten_array_w_0bias(model.parameters()).data
-    # model.update_dFdlambda_l2(Hv_l2, param, grad, is_cuda)
-    # model.update_lambda(args.mlr * 0.01, val_grad=grad_valid)
+    param = flatten_array_w_0bias(model.parameters()).data
+    model.update_dFdlambda_l2(Hv_l2, param, grad, args.is_cuda)
+    model.update_lambda(args.mlr * 0.01, val_grad=grad_valid)
 
     optimizer = update_optimizer_hyperparams(args, model, optimizer)
 

@@ -309,8 +309,8 @@ def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, opt
     dFdlr = unflatten_array(model.dFdlr, model.param_cumsum, param_shapes)
     Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, is_cuda=args.is_cuda)
 
-    # dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
-    # Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, is_cuda=args.is_cuda)
+    dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
+    Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, is_cuda=args.is_cuda)
 
     model, loss_valid, grad_valid = get_grad_valid(model, data_vl, target_vl, args.is_cuda)
 
@@ -323,9 +323,9 @@ def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, opt
 
     model.update_dFdlr(Hv_lr, param, grad, args.is_cuda, noise=noise)
     model.update_eta(args.mlr, val_grad=grad_valid)
-    # param = flatten_array_w_0bias(model.parameters()).data
-    # model.update_dFdlambda_l2(Hv_l2, param, grad, args.is_cuda)
-    # model.update_lambda(args.mlr * 0.01, val_grad=grad_valid)
+    param = flatten_array_w_0bias(model.parameters()).data
+    model.update_dFdlambda_l2(Hv_l2, param, grad, args.is_cuda)
+    model.update_lambda(args.mlr * 0.01, val_grad=grad_valid)
 
     optimizer = update_optimizer_hyperparams(args, model, optimizer)
 

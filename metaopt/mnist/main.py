@@ -1,6 +1,7 @@
 import os, sys, math, time
 import torch
 import torch.optim as optim
+from sweep_agent.agent import get_sweep_config
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
@@ -352,11 +353,15 @@ def update_optimizer_hyperparams(args, model, optimizer):
 
 
 if __name__ == "__main__":
+    sweep_config = get_sweep_config()
+    if not sweep_config:
+        raise ValueError("No sweep config received")
+
     wandb_kwargs = {
         "mode": "offline",
-        "group": "mnist_sweep",
-        "config": Config().__dict__,
-        "project": "new_metaopt",
+        "group": sweep_config.name,
+        "config": sweep_config.config,
+        "project": sweep_config.config["project"],
     }
 
     with wandb.init(**wandb_kwargs) as run:

@@ -45,16 +45,10 @@ parameters:
     value: 100
 
   batch_size_vl:
-    value: 500
-
-  batch_size:
-    value: 500
+    value: 100
 
   save_dir:
     value: "/dump"
-
-  # xdim:
-  #   value: 28
 
   checkpoint_freq:
     value: 200

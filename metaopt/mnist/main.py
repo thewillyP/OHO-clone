@@ -1,4 +1,6 @@
 import os, sys, math, time
+from typing import Union
+
 import torch
 import torch.optim as optim
 from sweep_agent.agent import get_sweep_config
@@ -28,7 +30,7 @@ class Config:
     project: str = "new_metaopt"
     test_freq: int = 10
     rng: int = 0
-    dataset: str = "mnist"
+    dataset: str = Union["mnist", "fashionmnist"]
     num_epoch: int = 100
     batch_size: int = 100
     batch_size_vl: int = 100
@@ -65,13 +67,19 @@ def save_object_as_wandb_artifact(obj, artifact_name: str, fdir: str, filename: 
 
 
 def seed_worker(worker_id):
-    worker_seed = torch.initial_seed() % 2**32
+    worker_seed = torch.initial_seed() % 2 ** 32
     np.random.seed(worker_seed)
     random.seed(worker_seed)
 
 
-def load_mnist(args):
-    dataset = datasets.MNIST(
+def load_dataset(args, dataset_fn):
+    test_dataset = dataset_fn(
+        f"{args.save_dir}/data/mnist",
+        train=False,
+        download=True,
+        transform=transforms.Compose([transforms.ToTensor()]),
+    )
+    dataset = dataset_fn(
         f"{args.save_dir}/data/mnist", train=True, download=True,
         transform=transforms.Compose([transforms.ToTensor()])
     )
@@ -84,12 +92,7 @@ def load_mnist(args):
         valid_set, batch_size=args.batch_size_vl, shuffle=True, worker_init_fn=seed_worker, num_workers=0
     )
     data_loader_te = DataLoader(
-        datasets.MNIST(
-            f"{args.save_dir}/data/mnist",
-            train=False,
-            download=True,
-            transform=transforms.Compose([transforms.ToTensor()]),
-        ),
+        test_dataset,
         batch_size=args.batch_size,
         shuffle=True,
         worker_init_fn=seed_worker,
@@ -102,7 +105,13 @@ def load_mnist(args):
 
 
 def main(args, trial=0, quotient=None, device="cuda"):
-    dataset = load_mnist(args)
+    match args.dataset:
+        case "mnist":
+            dataset = load_dataset(args, datasets.MNIST)
+        case "fashionmnist":
+            dataset = load_dataset(args, datasets.FashionMNIST)
+        case _:
+            raise NotImplementedError
 
     hdims = [args.xdim] + [args.hdim] * args.num_hlayers + [args.ydim]
     num_layers = args.num_hlayers + 2
@@ -146,10 +155,7 @@ def main(args, trial=0, quotient=None, device="cuda"):
     args.fdir = fdir
     print(args.fdir)
 
-    final_test_loss = train(args, dataset, model, optimizer, fdir)
-    print("Final test loss %f" % final_test_loss)
-    print(type(final_test_loss))
-    return final_test_loss
+    train(args, dataset, model, optimizer, fdir)
 
 
 def train(args, dataset, model, optimizer, fdir):
@@ -258,8 +264,6 @@ def train(args, dataset, model, optimizer, fdir):
                 corr_std,
             )
         )
-
-    return te_losses[-1]
 
 
 def feval(data, target, model, optimizer, mode="eval", is_cuda=0, opt_type="sgd", N=50000):

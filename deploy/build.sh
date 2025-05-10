@@ -12,7 +12,7 @@
 
 
 IMAGE=oho-clone
-VERSION=1.0.8
+VERSION=1.0.10
 DOCKER_URL="docker://thewillyp/${IMAGE}:main-${VERSION}"
 
 # Build the Singularity image

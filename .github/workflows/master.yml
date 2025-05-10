@@ -10,7 +10,7 @@ on:
       - entrypoint.sh
       - setup.py
     branches:
-      - 'master'
+      - 'main'
     tags:
       - 'v*'
 

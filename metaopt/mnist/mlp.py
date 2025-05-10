@@ -201,7 +201,7 @@ class MLP(nn.Module):
         delta = val_grad.dot(self.dFdl2).data.cpu().numpy()
         self.lambda_l2 -= mlr * delta 
         self.lambda_l2 = np.maximum(0, self.lambda_l2)
-        self.lambda_l2 = np.minimum(0.0002, self.lambda_l2)
+        # self.lambda_l2 = np.minimum(0.0002, self.lambda_l2)
 
 
 class AMLP(MLP):

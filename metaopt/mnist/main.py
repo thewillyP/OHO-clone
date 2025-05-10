@@ -99,7 +99,12 @@ def load_dataset(args, dataset_fn):
         num_workers=0,
     )
 
-    data_loader_vl = cycle(data_loader_vl)
+    def infinite_loader(loader):
+        while True:
+            for batch in loader:
+                yield batch
+
+    data_loader_vl = infinite_loader(data_loader_vl)
     dataset = [data_loader_tr, data_loader_vl, data_loader_te]
     return dataset
 
@@ -332,7 +337,7 @@ def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, opt
     model.update_eta(args.mlr, val_grad=grad_valid)
     param = flatten_array_w_0bias(model.parameters()).data
     model.update_dFdlambda_l2(Hv_l2, param, grad, args.is_cuda)
-    model.update_lambda(args.mlr * 0.01, val_grad=grad_valid)
+    model.update_lambda(args.mlr, val_grad=grad_valid)
 
     optimizer = update_optimizer_hyperparams(args, model, optimizer)
 

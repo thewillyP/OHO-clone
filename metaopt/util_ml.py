@@ -13,13 +13,13 @@ from metaopt.util import *
 #torch.manual_seed(3)
 
 
-def compute_HessianVectorProd(model, dFdS, data, target, is_cuda=0, logosftmax=1):
+def compute_HessianVectorProd(model, dFdS, data, target, unupdated, is_cuda=0, logosftmax=1):
 
     eps_machine = np.finfo(data.data.cpu().numpy().dtype).eps
 
     ## Compute Hessian Vector product h
     vmax_x, vmax_d = 0, 0
-    model_plus = deepcopy(model)
+    model_plus = deepcopy(unupdated)
     for param, direction in zip(model_plus.parameters(), dFdS):
         vmax_x = np.maximum(vmax_x, torch.max(torch.abs(param)).item())
         vmax_d = np.maximum(vmax_d, torch.max(abs(direction)).item())
@@ -42,7 +42,7 @@ def compute_HessianVectorProd(model, dFdS, data, target, is_cuda=0, logosftmax=1
     loss = F.nll_loss(output, target)
     loss.backward()
 
-    model_minus = deepcopy(model)
+    model_minus = deepcopy(unupdated)
     for p in model_minus.parameters():
          #print(p.data[0][0])
          break
@@ -62,7 +62,7 @@ def compute_HessianVectorProd(model, dFdS, data, target, is_cuda=0, logosftmax=1
     loss.backward()
 
    
-    for p in model.parameters():
+    for p in unupdated.parameters():
          #print(p.data[0][0])
          break
     

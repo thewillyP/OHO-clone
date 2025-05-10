@@ -186,6 +186,7 @@ def train(args, dataset, model, optimizer, fdir):
         for batch_idx, (data, target) in enumerate(dataset[TRAIN]):
             data, target = to_torch_variable(data, target, args.is_cuda)
             opt_type = args.opt_type
+            unupdated = deepcopy(model)
             model, loss, accuracy, output, noise, grad_vec = feval(
                 data, target, model, optimizer, is_cuda=args.is_cuda, mode="meta-train", opt_type=opt_type
             )
@@ -198,7 +199,8 @@ def train(args, dataset, model, optimizer, fdir):
             if counter % args.update_freq == 0 and args.mlr != 0.0:
                 data_vl, target_vl = next(dataset[VALID])
                 data_vl, target_vl = to_torch_variable(data_vl, target_vl, args.is_cuda)
-                model, loss_vl, optimizer = meta_update(args, data_vl, target_vl, data, target, model, optimizer, noise)
+                model, loss_vl, optimizer = meta_update(args, data_vl, target_vl, data, target, model, optimizer,
+                                                        unupdated, noise)
                 vl_loss_list.append(loss_vl.item())
                 wandb.log(
                     {
@@ -309,13 +311,13 @@ def feval(data, target, model, optimizer, mode="eval", is_cuda=0, opt_type="sgd"
     return model, loss.item(), accuracy.item(), output, noise, grad_vec
 
 
-def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, optimizer, noise=None):
+def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, optimizer, unupdated, noise=None):
     param_shapes = model.param_shapes
     dFdlr = unflatten_array(model.dFdlr, model.param_cumsum, param_shapes)
-    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, is_cuda=args.is_cuda)
+    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, unupdated, is_cuda=args.is_cuda)
 
     dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
-    Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, is_cuda=args.is_cuda)
+    Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, unupdated, is_cuda=args.is_cuda)
 
     model, loss_valid, grad_valid = get_grad_valid(model, data_vl, target_vl, args.is_cuda)
 

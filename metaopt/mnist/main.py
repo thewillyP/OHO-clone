@@ -71,7 +71,8 @@ def seed_worker(worker_id):
 
 def load_mnist(args):
     dataset = datasets.MNIST(
-        "data/mnist", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()])
+        f"{args.save_dir}/data/mnist", train=True, download=True,
+        transform=transforms.Compose([transforms.ToTensor()])
     )
     train_set, valid_set = torch.utils.data.random_split(dataset, [60000 - args.valid_size, args.valid_size])
 
@@ -82,7 +83,12 @@ def load_mnist(args):
         valid_set, batch_size=args.batch_size_vl, shuffle=True, worker_init_fn=seed_worker, num_workers=0
     )
     data_loader_te = DataLoader(
-        datasets.MNIST("data/mnist", train=False, download=True, transform=transforms.Compose([transforms.ToTensor()])),
+        datasets.MNIST(
+            f"{args.save_dir}/data/mnist",
+            train=False,
+            download=True,
+            transform=transforms.Compose([transforms.ToTensor()]),
+        ),
         batch_size=args.batch_size,
         shuffle=True,
         worker_init_fn=seed_worker,

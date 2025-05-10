@@ -12,16 +12,16 @@
 
 
 IMAGE=oho-clone
-VERSION=1.0.2
+VERSION=1.0.4
 DOCKER_URL="docker://thewillyp/${IMAGE}:main-${VERSION}"
 
 # Build the Singularity image
-singularity build --force /scratch/${USER}/images/${IMAGE}-${VERSION}-cpu.sif ${DOCKER_URL}-cpu
-singularity build --force /scratch/${USER}/images/${IMAGE}-${VERSION}-gpu.sif ${DOCKER_URL}-gpu
+singularity build --force /scratch/"${USER}"/images/${IMAGE}-${VERSION}-cpu.sif ${DOCKER_URL}-cpu
+singularity build --force /scratch/"${USER}"/images/${IMAGE}-${VERSION}-gpu.sif ${DOCKER_URL}-gpu
 
 # Create the overlay
-singularity overlay create --size 20480 /scratch/${USER}/images/${IMAGE}-${VERSION}-cpu.sif
-singularity overlay create --size 20480 /scratch/${USER}/images/${IMAGE}-${VERSION}-gpu.sif
+singularity overlay create --size 20480 /scratch/"${USER}"/images/${IMAGE}-${VERSION}-cpu.sif
+singularity overlay create --size 20480 /scratch/"${USER}"/images/${IMAGE}-${VERSION}-gpu.sif
 
 
 # 10 GiB

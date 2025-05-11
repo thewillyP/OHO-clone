@@ -1,5 +1,5 @@
 program: /OHO-clone/metaopt/mnist/main.py
-name: oho_mlp_both
+name: oho_mlp_both_fixed_vl_broken_hv
 method: grid
 version: 1.0.0
 metric:

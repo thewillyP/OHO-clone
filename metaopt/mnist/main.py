@@ -319,7 +319,7 @@ def feval(data, target, model, optimizer, mode="eval", is_cuda=0, opt_type="sgd"
 def meta_update(args: Config, data_vl, target_vl, data_tr, target_tr, model, optimizer, unupdated, noise=None):
     param_shapes = model.param_shapes
     dFdlr = unflatten_array(model.dFdlr, model.param_cumsum, param_shapes)
-    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, unupdated, is_cuda=args.is_cuda)
+    Hv_lr = compute_HessianVectorProd(model, dFdlr, data_tr, target_tr, model, is_cuda=args.is_cuda)
 
     dFdl2 = unflatten_array(model.dFdl2, model.param_cumsum, param_shapes)
     Hv_l2 = compute_HessianVectorProd(model, dFdl2, data_tr, target_tr, unupdated, is_cuda=args.is_cuda)

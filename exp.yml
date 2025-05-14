@@ -1,5 +1,5 @@
 program: /OHO-clone/metaopt/mnist/main.py
-name: oho_mlp_both_fixed_vl_broken_hv
+name: oho_mlp_broken_1000vl
 method: grid
 version: 1.0.0
 metric:
@@ -12,7 +12,7 @@ parameters:
     value: "fashionmnist"
 
   project:
-    value: "metaopt_fashionmnist"
+    value: "metaopt_fashionmnist_batch1000"
 
   test_freq:
     value: 1
@@ -47,8 +47,11 @@ parameters:
   num_epoch:
     value: 100
 
+  batch_size:
+    value: 1000
+
   batch_size_vl:
-    value: 100
+    value: 1000
 
   save_dir:
     value: "/dump"
